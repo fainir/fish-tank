@@ -115,7 +115,7 @@
         });
         
         // Improved mobile device detection using multiple methods
-        function isMobile() {
+        <!-- function isMobile() {
             // Check if the device has touch capability
             const hasTouchScreen = (
                 ('ontouchstart' in window) ||
@@ -132,6 +132,9 @@
                          
             // Return true if any of the mobile indicators are true
             return userAgentMobile || isIOS || (hasTouchScreen && window.innerHeight > window.innerWidth);
+        } -->
+        function isMobile() {
+            return false;
         }
         
         // Show message if on mobile
