@@ -43,58 +43,6 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 camera.position.set(0, AQUARIUM_HEIGHT / 2, AQUARIUM_DEPTH * 2.5); 
 camera.lookAt(0, 0, 0);
 
-// --- Mobile Device Detection ---
-function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-           (window.innerWidth <= 800 && window.innerHeight <= 900);
-}
-
-// Check if using a mobile device and show a message
-if (isMobileDevice()) {
-    // Hide canvas
-    const canvas = document.getElementById('aquariumCanvas');
-    if (canvas) {
-        canvas.style.display = 'none';
-    }
-    
-    // Create mobile message
-    const mobileMessage = document.createElement('div');
-    mobileMessage.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background-color: #f5f5f5;
-        color: #333;
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        text-align: center;
-        z-index: 1000;
-    `;
-    
-    const heading = document.createElement('h1');
-    heading.textContent = 'Desktop Only Experience';
-    heading.style.marginBottom = '20px';
-    
-    const message = document.createElement('p');
-    message.textContent = 'This 3D aquarium is not supported on mobile devices. Please try using a desktop computer.';
-    message.style.fontSize = '18px';
-    message.style.lineHeight = '1.5';
-    message.style.maxWidth = '600px';
-    
-    mobileMessage.appendChild(heading);
-    mobileMessage.appendChild(message);
-    document.body.appendChild(mobileMessage);
-    
-    // Stop further execution
-    throw new Error('Mobile device detected - initialization stopped');
-}
-
 // --- Renderer Setup ---
 const canvas = document.getElementById('aquariumCanvas');
 const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
