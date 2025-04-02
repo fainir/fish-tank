@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Aquarium Animation</title>
+    <!-- Preload key resources -->
+    <link rel="preload" href="https://unpkg.com/three@0.163.0/build/three.module.js" as="script">
+    <link rel="preload" href="aquarium.js" as="script">
+    
     <style>
         body { margin: 0; overflow: hidden; }
         #mobileMessage {
@@ -21,6 +25,53 @@
             font-size: 1.5rem;
             z-index: 1000;
         }
+        /* Loading overlay styles */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: white;
+            font-family: Arial, sans-serif;
+            transition: opacity 0.5s ease;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #88ccff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1.5s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #loadingText {
+            font-size: 1.2rem;
+        }
+        #loadingProgress {
+            width: 250px;
+            height: 10px;
+            background-color: #333;
+            margin-top: 15px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        #progressBar {
+            height: 100%;
+            width: 0%;
+            background-color: #88ccff;
+            transition: width 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -29,17 +80,40 @@
         This 3D aquarium is not supported on mobile devices.<br>
         Please try using a desktop computer.
     </div>
-
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
-            }
-        }
-    </script>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+        <div id="loadingText">Loading Aquarium (0%)</div>
+        <div id="loadingProgress">
+            <div id="progressBar"></div>
+        </div>
+    </div>
 
     <script>
+        // Flag to track initialization status
+        window.aquariumInitialized = false;
+        
+        // Add error handling for script loading
+        window.addEventListener('error', function(event) {
+            console.error('Script error detected:', event);
+            document.getElementById('loadingText').textContent = 
+                'Error loading resources. Please refresh the page.';
+        }, true);
+        
+        // Detect page visibility changes
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible' && !window.aquariumInitialized) {
+                console.log('Page became visible but aquarium not initialized, retrying...');
+                // Try reloading if page becomes visible but aquarium not initialized
+                setTimeout(function() {
+                    if (!window.aquariumInitialized) {
+                        location.reload();
+                    }
+                }, 5000);
+            }
+        });
+        
         // Improved mobile device detection using multiple methods
         function isMobile() {
             // Check if the device has touch capability
@@ -64,6 +138,16 @@
         if (isMobile()) {
             document.getElementById('mobileMessage').style.display = 'block';
             document.getElementById('aquariumCanvas').style.display = 'none';
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+    </script>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+            }
         }
     </script>
 

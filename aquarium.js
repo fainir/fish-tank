@@ -1,8 +1,76 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'; // Optional: For camera control
 
+// --- Loading Manager Setup ---
+const loadingManager = new THREE.LoadingManager();
+const progressBar = document.getElementById('progressBar');
+const loadingText = document.getElementById('loadingText');
+const loadingOverlay = document.getElementById('loadingOverlay');
+
+// Resources tracking
+let totalResources = 0;
+let loadedResources = 0;
+
+loadingManager.onStart = function(url, itemsLoaded, itemsTotal) {
+    totalResources = itemsTotal;
+    console.log('Started loading: ' + url);
+};
+
+loadingManager.onLoad = function() {
+    console.log('Loading complete!');
+    
+    // Hide loading screen with slight delay to ensure rendering has begun
+    setTimeout(() => {
+        loadingOverlay.style.opacity = 0;
+        setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+        }, 500);
+    }, 500);
+    
+    // After loading, gradually increase complexity
+    setTimeout(increaseComplexity, 5000);
+};
+
+loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
+    loadedResources = itemsLoaded;
+    const progress = Math.floor((itemsLoaded / itemsTotal) * 100);
+    progressBar.style.width = progress + '%';
+    loadingText.textContent = `Loading Aquarium (${progress}%)`;
+    console.log('Loading file: ' + url + ' (' + progress + '%)');
+};
+
+loadingManager.onError = function(url) {
+    console.error('Error loading: ' + url);
+    loadingText.textContent = 'Error loading resources. Try refreshing the page.';
+};
+
+// Function to gracefully increase complexity after initial load
+function increaseComplexity() {
+    console.log('Increasing scene complexity');
+    // Add additional fish
+    const additionalFish = Math.min(5, NUM_FISH_TARGET - NUM_FISH);
+    for (let i = 0; i < additionalFish; i++) {
+        createFish();
+    }
+    NUM_FISH += additionalFish;
+    
+    // Add additional bubbles
+    const additionalBubbles = Math.min(20, NUM_BUBBLES_TARGET - bubbles.length);
+    for (let i = 0; i < additionalBubbles; i++) {
+        createBubble();
+    }
+    
+    // Add additional particles
+    const additionalParticles = Math.min(50, NUM_PARTICLES_TARGET - particles.length);
+    for (let i = 0; i < additionalParticles; i++) {
+        createFloatingParticle();
+    }
+}
+
 // --- Configuration ---
-const NUM_FISH = 15;
+// Start with reduced complexity
+const NUM_FISH = 6; // Reduced from 15
+const NUM_FISH_TARGET = 15; // Target after progressive loading
 const FISH_SPEED = 0.05;
 const FISH_SPEED_EXCITED = 0.12; // Faster speed when hunting for food
 const FISH_SIZE = 0.5;
@@ -10,9 +78,11 @@ const AVOID_DISTANCE = FISH_SIZE * 3; // How close fish can get before turning
 const TURN_SPEED = 0.05; // How quickly fish turn
 const TURN_SPEED_FOOD = 0.1; // Faster turning when food is nearby
 const BOUNDARY_MARGIN = 1.5; // How far from the edge fish start turning - increased margin
-const NUM_PLANTS = 12; // Number of plants to create
-const NUM_BUBBLES = 60; // Number of bubbles
-const NUM_PARTICLES = 200; // Number of floating particles
+const NUM_PLANTS = 8; // Reduced from 12
+const NUM_BUBBLES = 30; // Reduced from 60
+const NUM_BUBBLES_TARGET = 60; // Target after progressive loading
+const NUM_PARTICLES = 80; // Reduced from 200
+const NUM_PARTICLES_TARGET = 200; // Target after progressive loading
 const FOOD_ATTRACTION_DISTANCE = 8; // How far away fish can sense food
 const FOOD_EAT_DISTANCE = 0.4; // How close fish need to be to eat food
 const FOOD_SINK_SPEED = 0.03; // How fast food sinks
@@ -498,7 +568,7 @@ for (let i = 0; i < waterGeometry.attributes.position.count; i++) {
 
 // --- Add Caustics Texture Effect ---
 const causticsGeometry = new THREE.PlaneGeometry(AQUARIUM_WIDTH, AQUARIUM_DEPTH, 1, 1);
-const textureLoader = new THREE.TextureLoader();
+const textureLoader = new THREE.TextureLoader(loadingManager);
 
 // Load the caustics texture
 const causticTextures = [
@@ -1419,6 +1489,15 @@ window.addEventListener('resize', () => {
 function animate() {
     requestAnimationFrame(animate); // Request next frame
 
+    // Mark as initialized once animation loop is running
+    if (!window.aquariumInitialized) {
+        window.aquariumInitialized = true;
+        console.log('Aquarium animation initialized successfully');
+    }
+
+    // Performance monitoring
+    const startTime = performance.now();
+
     const avoidanceVector = new THREE.Vector3(); // Reusable vector for calculations
     const targetVelocity = new THREE.Vector3();  // Reusable vector
     const time = performance.now() * 0.001; // Current time in seconds
@@ -1785,12 +1864,39 @@ function animate() {
         }
     });
 
-    controls.update(); // Update controls if enabled
-    renderer.render(scene, camera); // Render the scene
+    // Monitor render performance
+    const frameTime = performance.now() - startTime;
+    if (frameTime > 50) { // If frame takes more than 50ms (less than 20fps)
+        console.warn(`Slow frame: ${frameTime.toFixed(2)}ms`);
+    }
+
+    // Update controls if we have them
+    if (controls) controls.update();
+    
+    // Render the scene
+    renderer.render(scene, camera);
 }
 
-// Start the animation
-animate();
+// --- Initialize the application with error handling ---
+try {
+    // Create a timer to detect stalled loading
+    const initTimeout = setTimeout(() => {
+        if (!window.aquariumInitialized) {
+            console.error('Initialization timed out');
+            loadingText.textContent = 'Loading timed out. Please refresh the page.';
+        }
+    }, 30000); // 30 second timeout
+
+    // Start animation loop
+    animate();
+} catch (error) {
+    console.error('Error initializing aquarium:', error);
+    loadingText.textContent = 'Error initializing. Please refresh the page.';
+    // Try to provide more detailed error info
+    if (error && error.message) {
+        console.error('Error details:', error.message);
+    }
+}
 
 // TV Stand
 const tvStandGeometry = new THREE.BoxGeometry(22, 3, 8);
