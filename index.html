@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Aquarium Animation</title>
     <!-- Preload key resources -->
-    <link rel="preload" href="https://unpkg.com/three@0.163.0/build/three.module.js" as="script">
+    <!-- <link rel="preload" href="https://unpkg.com/three@0.163.0/build/three.module.js" as="script"> -->
     <link rel="preload" href="aquarium.js" as="script">
     
     <style>
@@ -115,7 +115,7 @@
         });
         
         // Improved mobile device detection using multiple methods
-        <!-- function isMobile() {
+        /* function isMobile() {
             // Check if the device has touch capability
             const hasTouchScreen = (
                 ('ontouchstart' in window) ||
@@ -132,7 +132,7 @@
                          
             // Return true if any of the mobile indicators are true
             return userAgentMobile || isIOS || (hasTouchScreen && window.innerHeight > window.innerWidth);
-        } -->
+        } */
         function isMobile() {
             return false;
         }
@@ -148,8 +148,8 @@
     <script type="importmap">
         {
             "imports": {
-                "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+                "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
             }
         }
     </script>

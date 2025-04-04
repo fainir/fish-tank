@@ -69,7 +69,7 @@ function increaseComplexity() {
 
 // --- Configuration ---
 // Start with reduced complexity
-const NUM_FISH = 15; // Reduced from 15
+const NUM_FISH = 20; // Reduced from 15
 const NUM_FISH_TARGET = 30; // Target after progressive loading
 const FISH_SPEED = 0.05;
 const FISH_SPEED_EXCITED = 0.12; // Faster speed when hunting for food
